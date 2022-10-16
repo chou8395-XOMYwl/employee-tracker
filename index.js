@@ -22,8 +22,8 @@ const promptMenu = [
   ];
 
   function ask() {
-    inquirer.prompt(promptMenu).then((responses) => {
-      switch (responses.menu) {
+    inquirer.prompt(promptMenu).then((answers) => {
+      switch (answers.menu) {
         case "View all Employees":
           viewAllEmployees();
           break;
@@ -34,10 +34,10 @@ const promptMenu = [
           viewAllRoles();
           break;
         case "Add a department":
-          addDept();
+            addDepartment();
           break;
         case "Add a role":
-          addRole();
+          addARole();
           break;
         case "Add an employee":
           addEmployee();
@@ -75,3 +75,74 @@ const promptMenu = [
       .then(() => ask());
   }
   
+  function addDepartment() {
+    return (
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "name",
+            message: "What department would you like to add?",
+            validate: (nameInput) => {
+              if (nameInput) {
+                return true;
+              } else {
+                console.log("Please enter department");
+                return false;
+              }
+            },
+          },
+        ])
+        .then((answer) => {
+          db.createDepartment(answer).then(() => ask());
+        })
+    );
+  }
+
+  function addARole() {
+    db.findAllDepartments().then(([data]) => {
+      let dept = data;
+      const deptList = data.map(({ name, id }) => ({
+        name: name,
+        value: id,
+      }));
+      return inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "roleName",
+            message: "What's the name of the role?",
+            validate: (roleNameInput) => {
+              if (roleNameInput) {
+                return true;
+              } else {
+                console.log("Please enter role name");
+                return false;
+              }
+            },
+          },
+          {
+            type: "input",
+            name: "salaryTotal",
+            message: "What is the salary for this role?",
+            validate: (roleSalaryTotal) => {
+              if (roleSalaryTotal) {
+                return true;
+              } else {
+                console.log("Please enter salary of this role");
+                return false;
+              }
+            },
+          },
+          {
+            type: "list",
+            name: "deptID",
+            message: "What is the department id number?",
+            choices: deptList,
+          },
+        ])
+        .then((answer) => {
+          db.createRole(answer).then(() => ask());
+        });
+    });
+  }
