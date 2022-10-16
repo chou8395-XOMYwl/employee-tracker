@@ -1,7 +1,8 @@
+const inquirer = require('inquirer');
 const mysql = require("mysql2");
-const inquirer = require("inquirer");
 const { findAllDepartments, findAllEmployees } = require("./db");
 const consoleTable = require("console.table")
+const db = require("./db");
 
 const connectToDb = mysql.createConnection(
   {
