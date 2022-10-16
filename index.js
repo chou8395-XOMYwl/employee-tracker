@@ -21,7 +21,7 @@ const promptMenu = [
     },
   ];
 
-  function ask() {
+  function prompt() {
     inquirer.prompt(promptMenu).then((answers) => {
       switch (answers.menu) {
         case "View all Employees":
@@ -43,7 +43,7 @@ const promptMenu = [
           addEmployee();
           break;
         case "Update an employee role":
-          updateRole();
+          updateEmployeeRole();
           break;
         default:
           process.exit();
@@ -56,7 +56,7 @@ const promptMenu = [
       .then(([data]) => {
         console.table(data);
       })
-      .then(() => ask());
+      .then(() => prompt());
   }
 
   function viewAllDepts() {
@@ -64,7 +64,7 @@ const promptMenu = [
       .then(([data]) => {
         console.table(data);
       })
-      .then(() => ask());
+      .then(() => prompt());
   }
   
   function viewAllRoles() {
@@ -72,7 +72,7 @@ const promptMenu = [
       .then(([data]) => {
         console.table(data);
       })
-      .then(() => ask());
+      .then(() => prompt());
   }
   
   function addDepartment() {
@@ -83,18 +83,10 @@ const promptMenu = [
             type: "input",
             name: "name",
             message: "What department would you like to add?",
-            validate: (nameInput) => {
-              if (nameInput) {
-                return true;
-              } else {
-                console.log("Please enter department");
-                return false;
-              }
-            },
           },
         ])
         .then((answer) => {
-          db.createDepartment(answer).then(() => ask());
+          db.createDepartment(answer).then(() => prompt());
         })
     );
   }
@@ -112,27 +104,12 @@ const promptMenu = [
             type: "input",
             name: "roleName",
             message: "What's the name of the role?",
-            validate: (roleNameInput) => {
-              if (roleNameInput) {
-                return true;
-              } else {
-                console.log("Please enter role name");
-                return false;
-              }
-            },
+        
           },
           {
             type: "input",
             name: "salaryTotal",
             message: "What is the salary for this role?",
-            validate: (roleSalaryTotal) => {
-              if (roleSalaryTotal) {
-                return true;
-              } else {
-                console.log("Please enter salary of this role");
-                return false;
-              }
-            },
           },
           {
             type: "list",
@@ -142,7 +119,99 @@ const promptMenu = [
           },
         ])
         .then((answer) => {
-          db.createRole(answer).then(() => ask());
+          db.createRole(answer).then(() => prompt());
         });
     });
   }
+
+  function addEmployee() {
+    db.findAllRoles().then(([data]) => {
+      let allRoles = data;
+      const roleInfo = allRoles.map(({ roleName, id }) => ({
+        name: roleName,
+        value: id,
+      }));
+      db.findAllEmployees().then(([data]) => {
+        let emp = data;
+        const allEmployees = emp.map(({ nameFirst, nameLast, id }) => ({
+          name: `${nameFirst}  ${nameLast}`,
+          value: id,
+        }));
+  
+        allEmployees.unshift({
+          name: "none",
+          value: null,
+        });
+  
+        inquirer
+          .prompt([
+            {
+              type: "input",
+              message: "What's the employees first name?",
+              name: "nameFirst",
+            },
+            {
+              type: "input",
+              name: "nameLast",
+              message: "What's the employees last name?",
+            },
+            {
+              type: "list",
+              name: "idRole",
+              message: "What's the employees id role number?",
+              choices: roleInfo,
+            },
+            {
+              type: "list",
+              name: "idManager",
+              message: "What's the managers id?",
+              choices: allEmployees,
+            },
+          ])
+          .then((answer) => {
+            db.createEmployee(answer).then(() => prompt());
+          });
+      });
+    });
+  }
+
+  function updateEmployeeRole() {
+    db.findAllEmployees().then(([data]) => {
+      let emp = data;
+      const allEmployees = emp.map(({ nameFirst, nameLast, id }) => ({
+        name: `${nameFirst} ${nameLast}`,
+        value: id,
+      }));
+  
+      db.findRoles().then(([data]) => {
+        let allRoles = data;
+        const roleInfo = allRoles.map(({ id, roleName }) => ({
+          name: `${roleName}`,
+          value: id,
+        }));
+  
+       inquirer
+          .prompt([
+            {
+              type: "list",
+              name: "employeeId",
+              message: "Which employee would you like to update?",
+              choices: allEmployees,
+            },
+            {
+              type: "list",
+              name: "roleID",
+              message: "Which role will this employee be updated with?",
+              choices: roleInfo,
+            },
+          ])
+          .then((answer) => {
+            const roleID = answer.roleID;
+            const employeeId = answer.employeeId;
+            db.updatedEmpRole(employeeId, roleID).then(() => prompt());
+          });
+      });
+    });
+  }
+
+  prompt();
