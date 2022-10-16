@@ -234,6 +234,6 @@ const promptMenu = [
 
   function exitApp() {
     console.log("Goodbye");
-    connection.end();
+    connectToDb.end();
     process.exit();
 }
