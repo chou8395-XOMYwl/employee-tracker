@@ -3,15 +3,20 @@ const inquirer = require("inquirer");
 const { findAllDepartments, findAllEmployees } = require("./db");
 const consoleTable = require("console.table")
 
-const db = mysql.createConnection(
+const connectToDb = mysql.createConnection(
   {
     host: 'localhost',
     user: 'root',
     password: 'Goclark12!',
     database: 'employee'
-  },
-  console.log('Connected to the employee database.')
+  }
 );
+
+connectToDb.connect(err => {
+  if (err) throw err;
+  console.log('Employee Tracker');
+  prompt()
+});
 
 const promptMenu = [
     {
