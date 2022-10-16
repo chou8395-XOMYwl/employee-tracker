@@ -3,6 +3,16 @@ const inquirer = require("inquirer");
 const { findAllDepartments, findAllEmployees } = require("./db");
 const consoleTable = require("console.table")
 
+const db = mysql.createConnection(
+  {
+    host: 'localhost',
+    user: 'root',
+    password: 'Goclark12!',
+    database: 'employee'
+  },
+  console.log('Connected to the employee database.')
+);
+
 const promptMenu = [
     {
       type: "list",
@@ -46,7 +56,7 @@ const promptMenu = [
           updateEmployeeRole();
           break;
         default:
-          process.exit();
+          exitApp();
       }
     });
   }
@@ -215,3 +225,9 @@ const promptMenu = [
   }
 
   prompt();
+
+  function exitApp() {
+    console.log("Goodbye");
+    connection.end();
+    process.exit();
+}
